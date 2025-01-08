@@ -32,9 +32,9 @@ class AdvancedImage extends Image
         parent::__construct($name, $attribute, $disk, $storageCallback);
 
         $this->thumbnail(function () {
-            return $this->value ? Storage::disk($this->disk)->url($this->value) : null;
+            return $this->value ? Storage::disk($this->getStorageDisk())->url($this->value) : null;
         })->preview(function () {
-            return $this->value ? Storage::disk($this->disk)->url($this->value) : null;
+            return $this->value ? Storage::disk($this->getStorageDisk())->url($this->value) : null;
         });
     }
 
@@ -48,10 +48,10 @@ class AdvancedImage extends Image
      *
      * @return void
      */
-    protected function fillAttribute(NovaRequest $request, $requestAttribute, $model, $attribute)
+    protected function fillAttribute(NovaRequest $request, $requestAttribute, $model, $attribute): mixed
     {
         if (empty($request->{$requestAttribute})) {
-            return;
+            return null;
         }
 
         $previousFileName = $model->{$attribute} ?? null;
@@ -61,8 +61,10 @@ class AdvancedImage extends Image
         parent::fillAttribute($request, $requestAttribute, $model, $attribute);
 
         if ($previousFileName !== null) {
-            Storage::disk($this->disk)->delete($previousFileName);
+            Storage::disk($this->getStorageDisk())->delete($previousFileName);
         }
+
+        return null;
     }
 
     /**
